@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Story Reader</title>
+  <style>
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Noto Sans CJK SC", system-ui, sans-serif;
+  background: #fbf8f1;
+  color: #2c2c2c;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  overflow: hidden;
+}
+button { font-family: inherit; cursor: pointer; }
+
+.sidebar {
+  background: #f3ece0;
+  border-right: 1px solid #e6dcc8;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.sidebar h1 {
+  margin: 0;
+  font-size: 22px;
+  color: #6b4b2b;
+  line-height: 1.3;
+}
+.sidebar h1 small {
+  display: block;
+  font-size: 14px;
+  font-weight: 400;
+  color: #8a7457;
+  margin-top: 4px;
+  font-family: Georgia, serif;
+}
+.chapter-list { display: flex; flex-direction: column; gap: 4px; }
+.chapter-item {
+  background: none; border: none;
+  padding: 10px 12px; border-radius: 8px;
+  text-align: left; font-size: 15px; color: #4a3a26;
+  cursor: pointer; transition: background .15s; width: 100%;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.chapter-item:hover { background: #ebe1cc; }
+.chapter-item.active { background: #c84b31; color: #fff; }
+.chapter-item.active .chapter-item-en { color: rgba(255,255,255,.85); }
+.chapter-item-en { font-size: 12px; color: #8a7457; font-family: Georgia, serif; }
+.chapter-item-meta { font-size: 11px; color: #b29977; margin-top: 2px; }
+.chapter-item.active .chapter-item-meta { color: rgba(255,255,255,.7); }
+
+.sidebar-toggle {
+  display: none; position: fixed; top: 14px; left: 14px; z-index: 50;
+  background: #6b4b2b; color: #fff; border: none; border-radius: 8px;
+  width: 42px; height: 42px; font-size: 22px;
+}
+
+main { display: grid; grid-template-rows: 1fr auto; height: 100vh; overflow: hidden; position: relative; }
+
+.page-frame {
+  display: grid;
+  grid-template: 1fr / 1fr;
+  padding: 24px 48px;
+  overflow: hidden;
+  position: relative;
+  user-select: none;
+  touch-action: pan-y;
+}
+
+.cover-page {
+  text-align: center;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 24px;
+  width: 100%; height: 100%;
+  animation: fadeUp .35s ease;
+}
+.cover-page > * { max-width: 900px; }
+.cover-meta { color: #b29977; font-size: 16px; letter-spacing: 2px; }
+.cover-cn {
+  font-size: clamp(48px, 8vw, 96px); font-weight: 800;
+  color: #6b4b2b; margin: 0; line-height: 1.1;
+}
+.cover-en {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(20px, 3vw, 32px); color: #4a3a26; margin: 0;
+}
+.cover-divider { width: 80px; height: 4px; background: #c84b31; border-radius: 2px; }
+
+.panel-page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  gap: 16px;
+  animation: fadeUp .35s ease;
+}
+.panel-page .image-wrap {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.panel-page img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 18px rgba(70, 40, 10, .18));
+}
+.panel-page .captions {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.panel-cn {
+  font-size: clamp(20px, 2.4vw, 28px); color: #6b4b2b;
+  font-weight: 700; text-align: center; margin: 0;
+  line-height: 2; min-height: 2em;
+  max-width: 100%; overflow-wrap: anywhere; word-break: break-word;
+}
+.panel-cn ruby { ruby-position: over; }
+.panel-cn rt {
+  font-size: 0.42em; color: #b07a3e; font-weight: 500;
+  font-family: "Microsoft YaHei", sans-serif;
+}
+.panel-en {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(15px, 1.6vw, 19px); color: #4a3a26;
+  text-align: center; margin: 0; font-style: italic;
+  min-height: 1.4em; opacity: 0.85;
+  max-width: 100%; overflow-wrap: anywhere;
+}
+.panel-page.no-en .panel-en { display: none; }
+.panel-page.no-pinyin rt { display: none; }
+.panel-page.no-pinyin ruby { ruby-position: unset; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.bottom-nav {
+  display: grid; grid-template-columns: 60px 1fr 60px;
+  align-items: center; gap: 14px;
+  padding: 12px 24px 18px;
+  background: #fbf8f1; border-top: 1px solid #ece2cd;
+}
+.nav-btn {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 1px solid #d8c8a8; background: #fff;
+  color: #6b4b2b; font-size: 24px;
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-btn:hover { background: #f3ece0; }
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.progress-area { display: flex; flex-direction: column; gap: 6px; }
+.chapter-progress { display: flex; gap: 4px; height: 6px; }
+.chapter-progress .seg {
+  flex: 1; background: #ece2cd; border-radius: 3px;
+  cursor: pointer; transition: background .15s;
+}
+.chapter-progress .seg:hover { background: #d8c8a8; }
+.chapter-progress .seg.done { background: #d8c8a8; }
+.chapter-progress .seg.active { background: #c84b31; }
+
+.page-progress { display: flex; gap: 3px; height: 4px; }
+.page-progress .seg {
+  flex: 1; background: #ece2cd; border-radius: 2px;
+  cursor: pointer; transition: background .15s;
+}
+.page-progress .seg:hover { background: #c8b896; }
+.page-progress .seg.done { background: #b29977; }
+.page-progress .seg.active { background: #6b4b2b; }
+
+.page-info {
+  text-align: center; font-size: 12px; color: #8a7457; letter-spacing: 0.5px;
+}
+
+/* Background watermark layer (per-page random photo from background/) */
+.bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 0.6s ease, background-image 0s;
+  pointer-events: none;
+  filter: blur(2px) saturate(0.7);
+}
+.bg-layer.loaded { opacity: 0.18; }
+.sidebar, main { position: relative; z-index: 1; }
+.sidebar { background: rgba(243, 236, 224, 0.85); backdrop-filter: blur(6px); }
+.bottom-nav { background: rgba(251, 248, 241, 0.88); backdrop-filter: blur(6px); }
+
+.loading, .error {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: #fbf8f1; color: #6b4b2b;
+  font-size: 18px; padding: 24px; text-align: center;
+}
+.error { color: #c84b31; }
+.error code { background: #f3ece0; padding: 2px 6px; border-radius: 4px; }
+
+@media (max-width: 768px) {
+  body { grid-template-columns: 1fr; }
+  .sidebar {
+    position: fixed; top: 0; left: 0; height: 100vh; width: 280px; z-index: 40;
+    transform: translateX(-100%); transition: transform .25s ease;
+    box-shadow: 4px 0 20px rgba(0,0,0,.1);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-toggle { display: flex; align-items: center; justify-content: center; }
+  .page-frame { padding: 70px 16px 12px; }
+  .panel-page img { max-height: 50vh; }
+  .bottom-nav { padding: 10px 12px 16px; grid-template-columns: 44px 1fr 44px; gap: 8px; }
+  .nav-btn { width: 40px; height: 40px; font-size: 20px; }
+}
+
+.backdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.35); z-index: 35;
+}
+.backdrop.show { display: block; }
+  </style>
+</head>
+<body>
+  <div class="bg-layer" id="bg-layer"></div>
+  <div class="loading" id="loading">读取中…</div>
+
+  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="目录" hidden>☰</button>
+  <div class="backdrop" id="backdrop" hidden></div>
+
+  <aside class="sidebar" id="sidebar" hidden>
+    <h1 id="book-title"></h1>
+    <nav class="chapter-list" id="chapter-list"></nav>
+  </aside>
+
+  <main hidden id="main">
+    <section class="page-frame" id="page-frame"></section>
+    <nav class="bottom-nav" aria-label="进度导航">
+      <button class="nav-btn" id="prev-btn" aria-label="上一页">‹</button>
+      <div class="progress-area">
+        <div class="chapter-progress" id="chapter-progress"></div>
+        <div class="page-progress" id="page-progress"></div>
+        <div class="page-info" id="page-info"></div>
+      </div>
+      <button class="nav-btn" id="next-btn" aria-label="下一页">›</button>
+    </nav>
+  </main>
+
+  <script type="importmap">
+  { "imports": { "pinyin-pro": "https://cdn.jsdelivr.net/npm/pinyin-pro@3.27.0/+esm" } }
+  </script>
+
+  <!-- INLINE_DATA -->
+
+  <script type="module">
+    // ---------- Load config + pinyin ---------- //
+    let pinyin;
+    try {
+      const mod = await import('pinyin-pro');
+      pinyin = mod.pinyin;
+    } catch (e) {
+      console.warn('pinyin-pro failed to load; pinyin will be disabled', e);
+      pinyin = null;
+    }
+
+    // Data is injected at build time as window.STORY_DATA / PANEL_IMAGES / BG_IMAGES
+    let config = window.STORY_DATA;
+    if (!config) {
+      const $loading = document.getElementById('loading');
+      $loading.className = 'error';
+      $loading.innerHTML = `没有找到内嵌的故事数据。<br>
+        这个 viewer.html 需要由 <code>crop_panels.py</code> 生成才会带上 STORY_DATA。<br>
+        请重新跑 <code>python crop_panels.py &lt;故事目录&gt;</code> 让它产出完整的单文件 index.html。`;
+      throw new Error('window.STORY_DATA missing');
+    }
+    const PANEL_IMAGES = window.PANEL_IMAGES || {};
+    const backgrounds = Array.isArray(window.BG_IMAGES) ? window.BG_IMAGES : [];
+
+    // ---------- Compute pinyin per char ---------- //
+    function escHtml(s) {
+      return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    }
+    function cnToRuby(cn) {
+      if (!cn) return '';
+      if (!pinyin) return escHtml(cn);
+      const out = [];
+      for (const ch of cn) {
+        const code = ch.codePointAt(0);
+        const isHan = code >= 0x4e00 && code <= 0x9fff;
+        if (isHan) {
+          const py = pinyin(ch, { toneType: 'symbol', type: 'string', nonZh: 'consecutive' });
+          if (py && py !== ch) {
+            out.push(`<ruby>${escHtml(ch)}<rt>${escHtml(py)}</rt></ruby>`);
+          } else {
+            out.push(escHtml(ch));
+          }
+        } else {
+          out.push(escHtml(ch));
+        }
+      }
+      return out.join('');
+    }
+
+    // ---------- Build flat page list ---------- //
+    const captions = config.captions || {};
+    const DATA = {
+      id: config.id || config.title || 'default',
+      title: config.title || '',
+      subtitle: config.subtitle || '',
+      chapters: (config.chapters || []).map(ch => ({
+        name: ch.name || '',
+        subtitle: ch.subtitle || '',
+        pages: (ch.panels || []).map(img => {
+          const cap = captions[img] || {};
+          return {
+            type: 'panel', image: img,
+            cn: cap.cn || '', en: cap.en || '',
+            cn_html: cnToRuby(cap.cn || ''),
+          };
+        }),
+      })),
+    };
+
+    document.title = DATA.title || 'Story Reader';
+
+    const PAGES = [];
+    DATA.chapters.forEach((ch, ci) => {
+      PAGES.push({ type: 'cover', chapterIndex: ci, name: ch.name, subtitle: ch.subtitle, pageInChapter: 0 });
+      ch.pages.forEach((p, pi) => PAGES.push({ ...p, chapterIndex: ci, pageInChapter: pi + 1 }));
+    });
+
+    const STORAGE_KEY = 'comic-story-kit:' + DATA.id + ':lastIndex';
+    let current = 0;
+    const urlP = parseInt(new URLSearchParams(location.search).get('p'), 10);
+    if (!isNaN(urlP) && urlP >= 0 && urlP < PAGES.length) {
+      current = urlP;
+    } else {
+      try {
+        const saved = parseInt(localStorage.getItem(STORAGE_KEY), 10);
+        if (!isNaN(saved) && saved >= 0 && saved < PAGES.length) current = saved;
+      } catch {}
+    }
+
+    // ---------- Reveal UI ---------- //
+    document.getElementById('loading').remove();
+    ['sidebar-toggle', 'backdrop', 'sidebar', 'main'].forEach(id => {
+      document.getElementById(id).hidden = false;
+    });
+
+    const $title = document.getElementById('book-title');
+    $title.innerHTML = escHtml(DATA.title) + (DATA.subtitle ? `<small>${escHtml(DATA.subtitle)}</small>` : '');
+
+    const $chapterList = document.getElementById('chapter-list');
+    DATA.chapters.forEach((ch, ci) => {
+      const btn = document.createElement('button');
+      btn.className = 'chapter-item';
+      btn.dataset.chapter = ci;
+      btn.innerHTML = `
+        <span>${escHtml(ch.name || ('故事 ' + (ci + 1)))}</span>
+        ${ch.subtitle ? `<span class="chapter-item-en">${escHtml(ch.subtitle)}</span>` : ''}
+        <span class="chapter-item-meta">${ch.pages.length} 页</span>`;
+      btn.addEventListener('click', () => { goToChapter(ci); closeSidebar(); });
+      $chapterList.appendChild(btn);
+    });
+
+    const $chapterProgress = document.getElementById('chapter-progress');
+    DATA.chapters.forEach((ch, ci) => {
+      const seg = document.createElement('div');
+      seg.className = 'seg';
+      seg.dataset.chapter = ci;
+      seg.title = ch.name || ('故事 ' + (ci + 1));
+      seg.addEventListener('click', () => goToChapter(ci));
+      $chapterProgress.appendChild(seg);
+    });
+
+    const $frame = document.getElementById('page-frame');
+    const $prev = document.getElementById('prev-btn');
+    const $next = document.getElementById('next-btn');
+    const $pageProgress = document.getElementById('page-progress');
+    const $pageInfo = document.getElementById('page-info');
+    const $sidebar = document.getElementById('sidebar');
+    const $backdrop = document.getElementById('backdrop');
+    const $sidebarToggle = document.getElementById('sidebar-toggle');
+    const $bgLayer = document.getElementById('bg-layer');
+
+    // Stable per-page background pick (Knuth multiplicative hash).
+    // Same page always shows the same background across reloads,
+    // but adjacent pages get different ones.
+    function pickBg(pageIdx) {
+      if (!backgrounds.length) return null;
+      const seed = ((pageIdx + 1) * 2654435761) >>> 0;
+      return backgrounds[seed % backgrounds.length];
+    }
+    function applyBg(pageIdx) {
+      const name = pickBg(pageIdx);
+      if (!name) {
+        $bgLayer.classList.remove('loaded');
+        return;
+      }
+      // `name` is a full data: URI when built single-file (or a relative path
+      // in dev mode). Either way, just use it as-is.
+      const img = new Image();
+      img.onload = () => {
+        $bgLayer.style.backgroundImage = `url("${name.replace(/"/g, '\\"')}")`;
+        $bgLayer.classList.add('loaded');
+      };
+      img.src = name;
+    }
+
+    function goToChapter(ci) {
+      const idx = PAGES.findIndex(p => p.chapterIndex === ci);
+      if (idx >= 0) goTo(idx);
+    }
+    function goTo(idx) {
+      if (idx < 0 || idx >= PAGES.length) return;
+      current = idx;
+      try { localStorage.setItem(STORAGE_KEY, String(current)); } catch {}
+      render();
+    }
+    const next = () => goTo(current + 1);
+    const prev = () => goTo(current - 1);
+
+    function render() {
+      const page = PAGES[current];
+      applyBg(current);
+      $frame.innerHTML = '';
+      if (page.type === 'cover') {
+        const div = document.createElement('div');
+        div.className = 'cover-page';
+        div.innerHTML = `
+          <div class="cover-meta">故事 ${page.chapterIndex + 1} / ${DATA.chapters.length}</div>
+          <h2 class="cover-cn">${escHtml(page.name || '')}</h2>
+          <div class="cover-divider"></div>
+          ${page.subtitle ? `<p class="cover-en">${escHtml(page.subtitle)}</p>` : ''}`;
+        $frame.appendChild(div);
+      } else {
+        const div = document.createElement('div');
+        div.className = 'panel-page';
+        div.innerHTML = `
+          <div class="image-wrap">
+            <img src="${PANEL_IMAGES[page.image] || ''}" alt="${escHtml(page.cn || '')}" draggable="false">
+          </div>
+          <div class="captions">
+            <p class="panel-cn">${page.cn_html || escHtml(page.cn || '')}</p>
+            <p class="panel-en">${escHtml(page.en || '')}</p>
+          </div>`;
+        $frame.appendChild(div);
+      }
+      $chapterList.querySelectorAll('.chapter-item').forEach(el => {
+        el.classList.toggle('active', parseInt(el.dataset.chapter, 10) === page.chapterIndex);
+      });
+      $chapterProgress.querySelectorAll('.seg').forEach(el => {
+        const ci = parseInt(el.dataset.chapter, 10);
+        el.classList.toggle('active', ci === page.chapterIndex);
+        el.classList.toggle('done', ci < page.chapterIndex);
+      });
+      $pageProgress.innerHTML = '';
+      const ch = DATA.chapters[page.chapterIndex];
+      const totalInChapter = ch.pages.length + 1;
+      for (let i = 0; i < totalInChapter; i++) {
+        const seg = document.createElement('div');
+        seg.className = 'seg';
+        if (i < page.pageInChapter) seg.classList.add('done');
+        if (i === page.pageInChapter) seg.classList.add('active');
+        seg.title = i === 0 ? '封面' : ('第 ' + i + ' 页');
+        seg.addEventListener('click', () => {
+          const firstIdx = PAGES.findIndex(p => p.chapterIndex === page.chapterIndex);
+          goTo(firstIdx + i);
+        });
+        $pageProgress.appendChild(seg);
+      }
+      $pageInfo.textContent = page.type === 'cover'
+        ? `${ch.name || '故事'} · 封面`
+        : `${ch.name || '故事'}  ·  ${page.pageInChapter} / ${ch.pages.length}`;
+      $prev.disabled = current === 0;
+      $next.disabled = current === PAGES.length - 1;
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      switch (e.key) {
+        case 'ArrowRight': case ' ': case 'PageDown':
+          e.preventDefault(); next(); break;
+        case 'ArrowLeft': case 'PageUp':
+          e.preventDefault(); prev(); break;
+        case 'Home': e.preventDefault(); goTo(0); break;
+        case 'End': e.preventDefault(); goTo(PAGES.length - 1); break;
+      }
+    });
+    $prev.addEventListener('click', prev);
+    $next.addEventListener('click', next);
+
+    let touchStartX = null, touchStartY = null, touchStartT = 0;
+    $frame.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartT = Date.now();
+    }, { passive: true });
+    $frame.addEventListener('touchend', (e) => {
+      if (touchStartX === null) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - touchStartX;
+      const dy = t.clientY - touchStartY;
+      const dt = Date.now() - touchStartT;
+      touchStartX = touchStartY = null;
+      if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) || dt > 700) return;
+      if (dx < 0) next(); else prev();
+    }, { passive: true });
+
+    $sidebarToggle.addEventListener('click', () => {
+      $sidebar.classList.toggle('open');
+      $backdrop.classList.toggle('show');
+    });
+    $backdrop.addEventListener('click', closeSidebar);
+    function closeSidebar() {
+      $sidebar.classList.remove('open');
+      $backdrop.classList.remove('show');
+    }
+
+    render();
+  </script>
+</body>
+</html>

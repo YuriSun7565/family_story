@@ -1,0 +1,129 @@
+{
+  "id": "fz_test_2026_05_09",
+  "title": "父子小故事",
+  "subtitle": "Father and Son Stories",
+  "chapters": [
+    {
+      "name": "替儿子做作业",
+      "subtitle": "Doing the Homework for the Son",
+      "panels": ["comic_18.png", "comic_19.png", "comic_20.png", "comic_01.png", "comic_02.png", "comic_03.png"]
+    },
+    {
+      "name": "墙头的画",
+      "subtitle": "The Drawings on the Wall",
+      "panels": ["comic_04.png", "comic_05.png", "comic_06.png"]
+    },
+    {
+      "name": "街头艺人",
+      "subtitle": "The Street Performer",
+      "panels": ["comic_07.png", "comic_08.png", "comic_09.png", "comic_10.png", "comic_11.png"]
+    },
+    {
+      "name": "汽车抛锚",
+      "subtitle": "The Car Breaks Down",
+      "panels": ["comic_12.png", "comic_13.png", "comic_14.png", "comic_15.png", "comic_16.png", "comic_17.png"]
+    }
+  ],
+  "captions": {
+    "comic_18.png": {
+      "cn": "儿子坐在桌前对着作业冥思苦想，爸爸在旁边背着手站着。",
+      "en": "The son sits at the desk thinking hard over the homework, while the father stands by with his hands behind his back.",
+      "_source": "Snipaste_2026-05-09_08-51-53.png · 左列"
+    },
+    "comic_19.png": {
+      "cn": "爸爸坐下来代替儿子写作业，儿子靠在他肩上。",
+      "en": "The father sits down to write the homework in the son's place; the son leans on his shoulder.",
+      "_source": "Snipaste_2026-05-09_08-51-53.png · 右上"
+    },
+    "comic_20.png": {
+      "cn": "老师拿着作业本站在三个学生面前。",
+      "en": "The teacher stands in front of three pupils, holding the notebook.",
+      "_source": "Snipaste_2026-05-09_08-51-53.png · 右下"
+    },
+    "comic_01.png": {
+      "cn": "老师拿着本子，牵着儿子的手往家走。",
+      "en": "The teacher leads the son by the hand, carrying the notebook.",
+      "_source": "Snipaste_2026-05-09_08-26-34.png · 左列"
+    },
+    "comic_02.png": {
+      "cn": "老师把儿子带回家，爸爸开门时一脸惊讶。",
+      "en": "The teacher brings the son home; the father opens the door looking shocked.",
+      "_source": "Snipaste_2026-05-09_08-26-34.png · 右列"
+    },
+    "comic_03.png": {
+      "cn": "老师把爸爸按在膝盖上打屁股，作业本掉在地上。",
+      "en": "The teacher puts the father over his knee and spanks him; the notebook lies on the floor.",
+      "_source": "Snipaste_2026-05-09_08-26-56.png · 左列"
+    },
+    "comic_04.png": {
+      "cn": "爸爸开车出门，儿子从大门里追了出来。",
+      "en": "The father drives off; the son runs out from the gate after him.",
+      "_source": "Snipaste_2026-05-09_08-26-56.png · 右上"
+    },
+    "comic_05.png": {
+      "cn": "儿子爬上墙头，旁边堆着一摞画纸。",
+      "en": "The son climbs onto the wall, with a stack of papers beside him.",
+      "_source": "Snipaste_2026-05-09_08-26-56.png · 右下"
+    },
+    "comic_06.png": {
+      "cn": "月光下，爸爸开车回家，看到墙头的画大吃一惊。",
+      "en": "Under the moon, the father drives home and is shocked by the drawings he finds on the wall.",
+      "_source": "Snipaste_2026-05-09_08-27-06.png · 左列"
+    },
+    "comic_07.png": {
+      "cn": "留着大胡子的街头艺人挂着手摇风琴在唱歌，爸爸递给他一枚硬币。",
+      "en": "A bearded street performer sings with a hurdy-gurdy hanging from his neck; the father hands him a coin.",
+      "_source": "Snipaste_2026-05-09_08-27-06.png · 右列"
+    },
+    "comic_08.png": {
+      "cn": "爸爸递过来一张纸，艺人接过来端详。",
+      "en": "The father holds out a piece of paper; the performer takes it and looks it over.",
+      "_source": "Snipaste_2026-05-09_08-27-13.png · 左上"
+    },
+    "comic_09.png": {
+      "cn": "艺人高兴得跳了起来挥手告别，爸爸牵着儿子离开。",
+      "en": "The performer leaps up waving in delight as the father walks off with the son.",
+      "_source": "Snipaste_2026-05-09_08-27-13.png · 左下"
+    },
+    "comic_10.png": {
+      "cn": "月亮挂在空中，街道上空无一人。",
+      "en": "The moon hangs in the sky over an empty street.",
+      "_source": "Snipaste_2026-05-09_08-27-13.png · 右上"
+    },
+    "comic_11.png": {
+      "cn": "第二天，那位艺人正坐在大教堂里弹奏管风琴，爸爸和儿子从外面走过。",
+      "en": "The next day, the same performer is playing a great pipe organ inside a cathedral as the father and son walk past.",
+      "_source": "Snipaste_2026-05-09_08-27-13.png · 右下"
+    },
+    "comic_12.png": {
+      "cn": "爸爸开着红色小汽车，儿子坐在副驾，爸爸举着扳手琢磨。",
+      "en": "The father drives a small red car with the son beside him, holding up a wrench in puzzlement.",
+      "_source": "Snipaste_2026-05-09_08-27-21.png · 左列"
+    },
+    "comic_13.png": {
+      "cn": "爸爸下了车，弯着腰把头伸进车头检查。",
+      "en": "The father gets out and bends down to look into the front of the car.",
+      "_source": "Snipaste_2026-05-09_08-27-21.png · 右上"
+    },
+    "comic_14.png": {
+      "cn": "爸爸整个人趴到车下检查。",
+      "en": "The father lies flat under the car to inspect it.",
+      "_source": "Snipaste_2026-05-09_08-27-21.png · 右下"
+    },
+    "comic_15.png": {
+      "cn": "爸爸坐在车里，外套朝后方飘起。",
+      "en": "The father sits in the car with his coat fluttering out behind him.",
+      "_source": "Snipaste_2026-05-09_08-27-28.png · 左列"
+    },
+    "comic_16.png": {
+      "cn": "爸爸驾着车，前面儿子骑着滑板车跑得飞快。",
+      "en": "The father drives the car while the son zips ahead on a kick scooter.",
+      "_source": "Snipaste_2026-05-09_08-27-28.png · 右上"
+    },
+    "comic_17.png": {
+      "cn": "最后爸爸自己骑着小车一路飞驰。",
+      "en": "In the end, the father is racing along on the little vehicle himself.",
+      "_source": "Snipaste_2026-05-09_08-27-28.png · 右下"
+    }
+  }
+}
